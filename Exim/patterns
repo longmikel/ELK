@@ -36,7 +36,7 @@ EXIM_DELIVERY_VIA_RELAY %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXI
 EXIM_DELIVERY_BOXTRAPPER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=virtual_boxtrapper_user T=virtual_boxtrapper_userdelivery
 
 # Defer
-EXIM_DELIVERY_FAILED %{EXIM_DATE} %{EXIM_MSGID} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? defer.*? %{GREEDYDATA:exim_responses}
+EXIM_DELIVERY_FAILED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? defer.*? %{GREEDYDATA:exim_responses}
 
 # Error
 EXIM_DELIVERY_BOUNCED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag} %{MAILDELIVERY_SENT:exim_sender}.*? T="Mail delivery failed: returning message to sender" for %{GREEDYDATA}
