@@ -1,5 +1,3 @@
-DATA %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:flags} %{GREEDYDATA:extra_field}
-
 DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 DOMAIN_SENT %{DOMAIN:domain_sent}
 DOMAIN_RECEIVE %{DOMAIN:domain_receive}
