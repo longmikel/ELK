@@ -1,0 +1,62 @@
+# Alert when the rate of events exceeds a threshold
+
+# (Optional)
+# Elasticsearch host
+# es_host: elasticsearch.example.com
+
+# (Optional)
+# Elasticsearch port
+# es_port: 14900
+
+# (OptionaL) Connect with SSL to Elasticsearch
+#use_ssl: True
+
+# (Optional) basic-auth username and password for Elasticsearch
+#es_username: someusername
+#es_password: somepassword
+
+# (Required)
+# Rule name, must be unique
+name: Spam Alert
+
+# (Required)
+# Type of alert.
+# the frequency rule type alerts when num_events events occur with timeframe time
+type: frequency
+
+# (Required)
+# Index to search, wildcard supported
+index: emailpro*
+
+# (Required, frequency specific)
+# Alert when this many documents matching the query occur within a timeframe
+num_events: 2
+
+# (Required, frequency specific)
+# num_events must occur within this amount of time to trigger an alert
+timeframe:
+  minutes: 5
+
+query_key: "From"
+# (Required)
+# A list of Elasticsearch filters used for find events
+# These filters are joined with AND and nested in a filtered query
+# For more info: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html
+filter:
+- query:
+    query_string:
+            query: "tags: Aggregate"
+
+- query:
+    query_string:
+            query: "Status.keyword : Sent Failed"
+
+# (Required)
+# The alert is use when a match is found
+alert:
+- "slack"
+
+# (required, email specific)
+# a list of email addresses to send alerts to
+slack:
+slack_webhook_url: "https://hooks.slack.com/services/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"
