@@ -30,13 +30,19 @@ EXIM_RECEIVED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag} %{EXIM_SENT:exim_
 # Delivery
 EXIM_DELIVERY_LOCAL %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?R=virtual_user.*?%{EXIM_SMTP_CONFIRMATION_LOCAL:exim_responses}
 <<<<<<< HEAD
+<<<<<<< HEAD
 EXIM_DELIVERY_OUT %{EXIM_MSGID:exim_messageid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?(%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT})
 EXIM_DELIVERY_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=autoreply_dkim_lookuphost T=dkim_remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
 =======
+=======
+>>>>>>> 9ef9449557f27e5e17ac20304d46b48ddaea45a5
 EXIM_DELIVERY_OUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=lookuphost T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
 EXIM_DELIVERY_DKIM_OUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=dkim_lookuphost T=dkim_remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
 EXIM_DELIVERY_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=autoreply_lookuphost T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
 EXIM_DELIVERY_DKIM_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=autoreply_dkim_lookuphost T=dkim_remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
+<<<<<<< HEAD
+>>>>>>> 9ef9449557f27e5e17ac20304d46b48ddaea45a5
+=======
 >>>>>>> 9ef9449557f27e5e17ac20304d46b48ddaea45a5
 EXIM_DELIVERY_MAILMAN %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=mailman_virtual_router T=mailman_virtual_transport
 EXIM_DELIVERY_VIA_RELAY %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=smart_route T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*?(%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses})
