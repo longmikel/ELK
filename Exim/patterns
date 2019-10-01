@@ -44,6 +44,9 @@ EXIM_DELIVERY_DKIM_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{
 EXIM_DELIVERY_MAILMAN %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=mailman_virtual_router T=mailman_virtual_transport
 EXIM_DELIVERY_VIA_RELAY %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? R=smart_route T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
 EXIM_DELIVERY_BOXTRAPPER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=virtual_boxtrapper_user T=virtual_boxtrapper_userdelivery
+EXIM_DELIVERY_JUNK %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=custom_central_filter T=address_directory
+EXIM_DELIVERY_CENTRAL_FILTER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=central_filte.*?
+EXIM_DELIVERY_USER_FILTER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=virtual_user_filter.*?
 
 # Defer
 EXIM_DELIVERY_ROUTING_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?routing defer.*?: retry time not reached
