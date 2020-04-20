@@ -49,7 +49,7 @@ filter:
 
 - query:
     query_string:
-            query: "Status.keyword : Sent Failed"
+            query: "/Exceeded Failed/"
 
 # (Required)
 # The alert is use when a match is found
