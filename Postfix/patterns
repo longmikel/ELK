@@ -1,3 +1,11 @@
+# helper smtp patterns
+DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
+MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
+POSTFIX_DOMAIN_SENDER %{DOMAIN:postfix_domain_sender}
+POSTFIX_DOMAIN_RECEIVER %{DOMAIN:postfix_domain_receiver}
+POSTFIX_FROM %{MAIL_USER}@%{POSTFIX_DOMAIN_SENDER}
+POSTFIX_TO %{MAIL_USER}@%{POSTFIX_DOMAIN_RECEIVER}
+
 # common postfix patterns
 POSTFIX_QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,})
 POSTFIX_CLIENT_INFO %{HOSTNAME:postfix_client_hostname}?\[%{IP:postfix_client_ip}\](:%{INT:postfix_client_port})?
