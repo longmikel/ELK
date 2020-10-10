@@ -1,72 +1,85 @@
-DATA %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:flags} %{GREEDYDATA:extra_field}
-
+# helper cP patterns
 DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 DOMAIN_SENT %{DOMAIN:domain_sent}
 DOMAIN_RECEIVE %{DOMAIN:domain_receive}
-EXIM_DATE %{YEAR:exim_year}-%{MONTHNUM:exim_month}-%{MONTHDAY:exim_day} %{TIME:exim_time}
+DOMAIN_AUTH %{DOMAIN:domain_auth}
+
+# common cP patterns
+EXIM_DATE %{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}
 EXIM_MSGID [0-9A-Za-z]{6}-[0-9A-Za-z]{6}-[0-9A-Za-z]{2}
 EXIM_FLAGS (<=|[-=>*]>|[*]{2}|==)
 EXIM_PID %{POSINT}
-EXIM_REMOTE_HOST (H=|from\s|host\s)(%{NOTSPACE:exim_remote_hostname} )?(\(%{NOTSPACE:exim_remote_heloname}\) )?\[%{IP:exim_remote_ip}\](:%{INT:exim_remote_port})?
+EXIM_REMOTE_HOST (H=|from\s|host\s|failed for\s)(%{NOTSPACE:exim_remote_hostname} )?(\(%{NOTSPACE:exim_remote_heloname}\) )?\[%{IP:exim_remote_ip}\](:%{INT:exim_remote_port})?
+EXIM_RELAY_HOST (H=|from\s|host\s|failed for\s)(%{NOTSPACE:exim_relay_hostname} )?(\(%{NOTSPACE:exim_relay_heloname}\) )?\[%{IP:exim_relay_ip}\](:%{INT:exim_relay_port})?
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
-EXIM_MAIL (%{MAIL_USER:user}@%{DOMAIN})
-EXIM_SENT (%{MAIL_USER:user_sent}@%{DOMAIN_SENT:domain})
-MAILDELIVERY_SENT (<>)
-EXIM_RECEIVE (%{MAIL_USER:user_receive}@%{DOMAIN_RECEIVE:domain})
+EXIM_SENT (%{MAIL_USER}@%{DOMAIN_SENT})
+EXIM_RECEIVE (%{MAIL_USER}@%{DOMAIN_RECEIVE})
+EXIM_AUTH (%{MAIL_USER}@%{DOMAIN_AUTH})
 EXIM_CODE (%{INT})|(%{INT})-(%{INT}.%{INT}.%{INT})
 EXIM_PROTOCOL (P=%{NOTSPACE:exim_protocol})
 EXIM_MSG_SIZE (S=%{NUMBER:exim_msg_size})
 EXIM_HEADER_ID (id=%{NOTSPACE:exim_header_id})
 EXIM_SUBJECT (T=%{QS:exim_subject})
 EXIM_TLS_INFO X=%{NOTSPACE:exim_tls_info}
+MAILDELIVERY_SENT (<>)
+EXIM_DOVECOT_LOGIN A=dovecot_login:(%{EXIM_AUTH:mailbox_auth})
 
-# SMTP CONFIRMATION
-EXIM_SMTP_CONFIRMATION_LOCAL (%{EXIM_CODE:exim_code}).*?(%{EXIM_RECEIVE:exim_receiver}).*
+EXIM_SMTP_CONFIRMATION_LOCAL (%{EXIM_CODE:exim_code}).*?(%{EXIM_RECEIVE:exim_to}).*
 EXIM_SMTP_CONFIRMATION_OUT (%{EXIM_CODE:exim_code}).*?
 EXIM_SMTP_ERROR (%{EXIM_CODE:exim_code}).*
 
-# EXCEEDED EMAILS OR DEFER/FAILED HOUR
 EXIM_EXCEEDED_EMAILS Domain (%{DOMAIN}) has exceeded the max emails per hour.*? allowed.
 EXIM_EXCEEDED_DEFER_FAIL Domain (%{DOMAIN}) has exceeded the max defers and failures per hour.*? allowed.
 
-#SUSPENSION
 EXIM_SENDER_SUSPENDED Sender (%{MAIL_USER}@%{DOMAIN}) has an outgoing mail suspension.
+EXIM_DOMAIN_SUSPENDED Domain (%{DOMAIN}) has an outgoing mail suspension.
 
-# Received
-EXIM_RECEIVED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag} %{EXIM_SENT:exim_sender} %{EXIM_REMOTE_HOST:exim_remote_host} %{EXIM_PROTOCOL}.*?(%{EXIM_MSG_SIZE}).*?(%{EXIM_SUBJECT}) for %{GREEDYDATA}
+EXIM_NO_USER R=%{NOTSPACE:exim_router}: No Such User Here
 
-# Delivery
-EXIM_DELIVERY_LOCAL %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?R=virtual_user.*? C=["]%{EXIM_SMTP_CONFIRMATION_LOCAL:exim_responses}["]
-EXIM_DELIVERY_OUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? R=lookuphost T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_DKIM_OUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? R=dkim_lookuphost T=dkim_remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=autoreply_lookuphost T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_DKIM_AUTOOUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=autoreply_dkim_lookuphost T=dkim_remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_MAILMAN %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=mailman_virtual_router T=mailman_virtual_transport
-EXIM_DELIVERY_VIA_RELAY_ROUTE %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? R=smart_route T=remote_smtp (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_VIA_RELAY_STATICROUTE %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? R=smarthost_dkim T=remote_smtp_smart_dkim (%{EXIM_REMOTE_HOST:exim_remote_host}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
-EXIM_DELIVERY_BOXTRAPPER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=virtual_boxtrapper_user T=virtual_boxtrapper_userdelivery
-EXIM_DELIVERY_JUNK %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=custom_central_filter T=address_directory
-EXIM_DELIVERY_CENTRAL_FILTER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=central_filte.*?
-EXIM_DELIVERY_USER_FILTER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=virtual_user_filter.*?
+# smtp connect patterns
+EXIM_CONNECTION SMTP connection %{EXIM_REMOTE_HOST} %{GREEDYDATA:exim_responses}
+EXIM_CONNECTION_TLS TLS error on connection %{EXIM_REMOTE_HOST} %{GREEDYDATA:exim_responses}
+EXIM_CONNECTION_SSL SSL_write: .%{EXIM_REMOTE_HOST}. %{GREEDYDATA:exim_responses}
+EXIM_CONNECTION_NOHOSTNAME no host name found for IP address %{IP:exim_remote_ip}
+EXIM_CONNECTION_SYNTAX SMTP call %{EXIM_REMOTE_HOST} %{GREEDYDATA:exim_responses}
+EXIM_CONNECTION_REJECT_RCPT %{EXIM_REMOTE_HOST}.*?F=.%{EXIM_SENT:exim_from}. rejected RCPT .%{EXIM_RECEIVE:exim_to}.*? %{GREEDYDATA:exim_responses}
+EXIM_WARNING %{EXIM_REMOTE_HOST} Warning.*? .*?%{GREEDYDATA:exim_responses}.*?
 
-# Defer
-EXIM_DELIVERY_ROUTING_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?routing defer.*?: retry time not reached
-EXIM_DELIVERY_LOOKUP_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=%{NOTSPACE:exim_router}.*?: host lookup did not complete
-EXIM_DELIVERY_NOROUTE_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=%{NOTSPACE:exim_router}.*?: No route to host
-EXIM_DELIVERY_TIMEOUT_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: Connection timed out
-EXIM_DELIVERY_TIMEOUT_EXCEEDED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*? retry timeout exceeded
-EXIM_DELIVERY_RETRY_DEFER %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: retry time not reached for any host for [']%{DOMAIN}[']
-EXIM_DELIVERY_HOUR_EMAILS %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?%{EXIM_EXCEEDED_EMAILS:exim_responses}.*?
-EXIM_DELIVERY_DEFER_FAIL %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?%{EXIM_EXCEEDED_DEFER_FAIL:exim_responses}.*?
-EXIM_SENDER_SUSPENDED_OUT %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?%{EXIM_SENDER_SUSPENDED:exim_responses}.*?
-EXIM_DELIVERY_SMTP_ERROR %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag}.*?%{EXIM_RECEIVE:exim_receiver}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: SMTP error from remote mail server after.*?: (%{EXIM_SMTP_ERROR:exim_responses})
+# received patterns
+EXIM_RECEIVED %{EXIM_SENT:exim_from} %{EXIM_REMOTE_HOST} %{EXIM_PROTOCOL}(.*?%{EXIM_DOVECOT_LOGIN}.*?(%{EXIM_MSG_SIZE}).*?(%{EXIM_SUBJECT}) for %{GREEDYDATA}|.*?(%{EXIM_MSG_SIZE}).*?(%{EXIM_SUBJECT}) for %{GREEDYDATA})
 
-# Error
-EXIM_DELIVERY_BOUNCED %{EXIM_MSGID:exim_msgid} %{EXIM_FLAGS:exim_flag} %{MAILDELIVERY_SENT:exim_sender}.*? T="Mail delivery failed: returning message to sender" for %{GREEDYDATA}
+# delivery patterns
+EXIM_DELIVERY_LOCAL R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport} C=["]%{EXIM_SMTP_CONFIRMATION_LOCAL:exim_responses}["]
+EXIM_DELIVERY_FILTER /home/.*?%{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}
+EXIM_DELIVERY_OUT %{EXIM_RECEIVE:exim_to}.*? R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport} (%{EXIM_RELAY_HOST}).*? C=["]%{EXIM_SMTP_CONFIRMATION_OUT:exim_responses}["]
+EXIM_DELIVERY_MAILMAN %{EXIM_RECEIVE:exim_to}.*?R=mailman_virtual_router T=mailman_virtual_transport
+EXIM_DELIVERY_BOXTRAPPER %{EXIM_RECEIVE:exim_to}.*?R=virtual_boxtrapper_user T=virtual_boxtrapper_userdelivery
 
-# Process
-EXIM_PROCESS cwd=/var/spool/exim 3 args: /usr/sbin/exim -Mc %{EXIM_MSGID:exim_messageid}
+# defer patterns
+EXIM_ERROR_DEFER %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?(%{EXIM_RELAY_HOST}).*? SMTP error from remote mail server after.*?: (%{EXIM_SMTP_ERROR:exim_responses})
+EXIM_ROUTE_DEFER %{EXIM_RECEIVE:exim_to}.*?routing defer.*?: retry time not reached
+EXIM_LOOKUP_DEFER %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router}.*?: host lookup did not complete
+EXIM_NOROUTE_DEFER %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router}.*?: No route to host
+EXIM_TIMEOUT_CONNECTION_DEFER %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: Connection timed out
+EXIM_RETRY_DEFER %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: retry time not reached for any host for [']%{DOMAIN}[']
 
-# Verify Identification
-EXIM_SENDER_IDENTIFICATION (U=%{MAIL_USER}) (D=%{DOMAIN}) (S=%{EXIM_MAIL})
-EXIM_SMTP_CONNECTION_OUTBOUND SMTP connection outbound %{POSINT} %{EXIM_MSGID:exim_msgid} %{DOMAIN} %{EXIM_MAIL}
+# error patterns
+EXIM_REMOTE_ERROR %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?\s(%{EXIM_TLS_INFO}).*?\s(CV=%{NOTSPACE:CV}): SMTP error from remote mail server after.*?: (%{EXIM_SMTP_ERROR:exim_responses})
+EXIM_LMTP_ERROR %{EXIM_RECEIVE:exim_to}.*?R=%{NOTSPACE:exim_router} T=%{NOTSPACE:exim_transport}.*?: LMTP error after RCPT TO.*?(%{EXIM_SMTP_ERROR:exim_responses})
+EXIM_HOUR_ERROR %{EXIM_RECEIVE:exim_to}.*?%{EXIM_EXCEEDED_EMAILS:exim_responses}.*?
+EXIM_FAIL_ERROR %{EXIM_RECEIVE:exim_to}.*?%{EXIM_EXCEEDED_DEFER_FAIL:exim_responses}.*?
+EXIM_NO_USER_ERROR %{EXIM_RECEIVE:exim_to}.*?%{EXIM_NO_USER}
+EXIM_TIMEOUT_EXCEEDED_ERROR %{EXIM_RECEIVE:exim_to}.*? retry timeout exceeded
+EXIM_SENDER_SUSPENDED_OUT_ERROR %{EXIM_RECEIVE:exim_to}.*?%{EXIM_SENDER_SUSPENDED:exim_responses}.*?
+EXIM_DOMAIN_SUSPENDED_OUT_ERROR %{EXIM_RECEIVE:exim_to}.*?%{EXIM_DOMAIN_SUSPENDED:exim_responses}.*?
+
+# dovecot auth pattenrs
+EXIM_DOVECT_AUTH dovecot_login authenticator %{EXIM_REMOTE_HOST}: %{GREEDYDATA:exim_responses} .(set_id)=(%{EXIM_AUTH:mailbox_auth})
+
+# mime patterns
+EXIM_MIME %{EXIM_REMOTE_HOST} F=.(%{EXIM_SENT:exim_from}). %{GREEDYDATA:exim_responses}: filename=(%{GREEDYDATA:file_reject}). content-type=(%{GREEDYDATA:content_type}). recipients=%{EXIM_RECEIVE:exim_to}
+
+# aggregate all patterns
+EXIM_DELIVERY %{EXIM_DELIVERY_LOCAL}|%{EXIM_DELIVERY_OUT}|%{EXIM_DELIVERY_FILTER}|%{EXIM_DELIVERY_MAILMAN}|%{EXIM_DELIVERY_BOXTRAPPER}
+EXIM_DEFER %{EXIM_ERROR_DEFER}|%{EXIM_ROUTE_DEFER}|%{EXIM_LOOKUP_DEFER}|%{EXIM_NOROUTE_DEFER}|%{EXIM_TIMEOUT_CONNECTION_DEFER}|%{EXIM_RETRY_DEFER}
+EXIM_FAIL %{EXIM_REMOTE_ERROR}|%{EXIM_LMTP_ERROR}|%{EXIM_HOUR_ERROR}|%{EXIM_FAIL_ERROR}|%{%{EXIM_NO_USER_ERROR}}|%{EXIM_TIMEOUT_EXCEEDED_ERROR}|%{EXIM_SENDER_SUSPENDED_OUT_ERROR}|%{EXIM_DOMAIN_SUSPENDED_OUT_ERROR}
