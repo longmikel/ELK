@@ -2,7 +2,6 @@
 DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 DOMAIN_FROM %{DOMAIN:domain_from}
 DOMAIN_TO %{DOMAIN:domain_to}
-DOMAIN_AUTH %{DOMAIN:domain_auth}
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
 
 # common SM patterns
@@ -12,13 +11,14 @@ SM_CM (CMD|RSP)
 SM_REMOTE (%{IP:sm_remote_ip})(:%{INT:sm_remote_port})
 SM_CLIENT (%{IP:sm_client_ip})(:%{INT:sm_client_port})
 SM_CODE (%{INT})|(%{INT})-(%{INT}.%{INT}.%{INT})
-SM_FROM (%{MAIL_USER}@%{DOMAIN_FROM})
-SM_TO (%{MAIL_USER}@%{DOMAIN_TO})
+FROM (%{MAIL_USER}@%{DOMAIN_FROM})
+TO (%{MAIL_USER})@(%{DOMAIN_TO})|(\W%{MAIL_USER}\W).*?@(%{DOMAIN_TO})
 SM_SIZE (SIZE=%{NUMBER:sm_size})
 SM_PID %{POSINT}
 SM_ACTION Delivered|Bounced
 SM_FILTER None
-SM_NOTI [\[]]|\[True]|(\[False]|False)
+SM_STATUS [\[]]|\True|(\False|False)
+SM_NOTIFICATION Notify: %{SM_STATUS:Notify}\W Delivered: .%{SM_STATUS:Delivered}.\W Forwarded: .%{SM_STATUS:Forwarded}.\W Deleted: %{SM_STATUS:Deleted}
 
 # smtp connect patterns
 SM_CONNECTION Connection to %{SM_REMOTE} from %{SM_CLIENT} succeeded
@@ -26,14 +26,20 @@ SM_CONNECTION Connection to %{SM_REMOTE} from %{SM_CLIENT} succeeded
 # RSP patterns
 SM_PMG %{SM_CODE} %{NOTSPACE:PMG} ESMTP MatBao
 
-# CMD patterns
-SM_FROM MAIL FROM:<%{SM_SENT}> %{SM_SIZE}
-SM_TO RCPT TO:<%{SM_TO}> NOTIFY=FAILURE
+# start patterns
+SM_FROM Delivery started for %{FROM} at %{TIME} (AM|PM)
+SM_TO Starting local delivery to %{TO}
 
-# Delivery patterns
-Delivery for %{FROM:From} to %{TO:To} has completed .%{SM_ACTION:Action}. Filter: %{SM_FILTER}|Delivery for %{FROM:From} to %{TO:To} has completed .%{SM_ACTION:Action}.
+# end patterns
+SM_MSID End delivery to %{TO} \W(MessageID: %{GREEDYDATA:sm_messageid}\W)
 
-# Process notification patterns
-Process delivery status notification step from local recipient success. Recipient: .%{TO}.\W Notify: %{SM_NOTI}\W Delivered: %{SM_NOTI}\W Forwarded: %{SM_NOTI}\W Deleted: %{SM_NOTI}
+# Process delivery status patterns
+SM_PROCESS_DELIVERY_STATUS Process delivery status notification step from local recipient success. Recipient: .%{TO}.\W %{SM_NOTIFICATION}
 
-Notify: %{SM_NOTI}\W Delivered: %{SM_NOTI}\W Forwarded: %{SM_NOTI}\W Deleted: %{SM_NOTI}
+# Delivered patterns
+SM_DELIVERED Delivery for %{FROM:From} to %{TO:To} has completed .%{SM_ACTION:Action}. Filter: %{SM_FILTER:Filter}|Delivery for %{FROM:From} to %{TO:To} has completed .%{SM_ACTION:Action}.|Delivery for %{FROM:From} to .*%{TO:To} has completed .%{SM_ACTION:Action}.
+
+# Bounced patterns
+SM_BOUNCED Delivery for %{FROM} to .*%{TO} has bounced. Reason: %{GREEDYDATA:Responses}
+
+# aggregate all patterns
