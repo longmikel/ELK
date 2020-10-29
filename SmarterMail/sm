@@ -5,7 +5,7 @@ DOMAIN_TO %{DOMAIN:domain_to}
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
 
 # common SM patterns
-SM_DATE \[%{YEAR}.%{MONTHNUM}.%{MONTHDAY}] %{TIME}
+SM_DATE %{TIME}
 SM_ID ([0-9])\w+
 SM_CM (CMD|RSP)
 SM_REMOTE (%{IP:sm_remote_ip})(:%{INT:sm_remote_port})
@@ -41,5 +41,3 @@ SM_DELIVERED Delivery for %{FROM:From} to %{TO:To} has completed .%{SM_ACTION:Ac
 
 # Bounced patterns
 SM_BOUNCED Delivery for %{FROM} to .*%{TO} has bounced. Reason: %{GREEDYDATA:Responses}
-
-# aggregate all patterns
