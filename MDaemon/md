@@ -1,0 +1,13 @@
+# helper DM patterns
+DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
+DOMAIN_FROM %{DOMAIN:domain_from}
+DOMAIN_TO %{DOMAIN:domain_to}
+MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
+
+# common MD patterns
+MD_DATE %{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}
+MD_ID ([0-9])\w+
+MD_FLAGS (<--|-->|[*]\W)
+
+# smtp connect patterns
+MD_CONNECTION Accepting SMTP connection from %{MD_REMOTE} to %{MD_CLIENT}
