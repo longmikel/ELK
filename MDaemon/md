@@ -2,12 +2,23 @@
 DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 DOMAIN_FROM %{DOMAIN:domain_from}
 DOMAIN_TO %{DOMAIN:domain_to}
+DOMAIN_AUTH %{DOMAIN:domain_auth}
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
 
 # common MD patterns
 MD_DATE %{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}
 MD_ID ([0-9])\w+
 MD_FLAGS (<--|-->|[*]\W)
+MD_REMOTE (%{IP:md_remote_ip})(:%{INT:md_remote_port})
+MD_CLIENT (%{IP:md_client_ip})(:%{INT:md_client_port})
+MD_CODE (%{INT})|(%{INT})-(%{INT}.%{INT}.%{INT})
+MD_AUTH (%{MAIL_USER}@%{DOMAIN_AUTH})
+FROM (%{MAIL_USER}@%{DOMAIN_FROM})
+TO (%{MAIL_USER})@(%{DOMAIN_TO})|(\W%{MAIL_USER}\W).*?@(%{DOMAIN_TO})
+MD_SIZE (SIZE=%{NUMBER:md_size})
 
 # smtp connect patterns
-MD_CONNECTION Accepting SMTP connection from %{MD_REMOTE} to %{MD_CLIENT}
+MD_CONNECTION Accepting SMTP connection from %{MD_CLIENT} to %{MD_REMOTE}|Attempting SMTP connection to %{MD_REMOTE}
+
+# authenticated patterns
+MD_AUTHENTICATED Authenticated as %{MD_AUTH}
