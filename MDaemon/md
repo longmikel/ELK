@@ -24,5 +24,5 @@ MD_CONNECTION Accepting SMTP connection from %{MD_CLIENT} to %{MD_REMOTE}|Attemp
 MD_AUTHENTICATED Authenticated as %{MD_AUTH}
 
 # delivered patterns
-MAIL FROM:.%{FROM:From}. %{MD_SIZE}
-RCPT TO:.%{TO:To}.
+MD_FROM From: .*<%{FROM:From}>
+MD_TO To: .*<%{TO:To}>
