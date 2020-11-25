@@ -4,6 +4,8 @@ DOMAIN_FROM %{DOMAIN:domain_from}
 DOMAIN_TO %{DOMAIN:domain_to}
 DOMAIN_AUTH %{DOMAIN:domain_auth}
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
+FROM (%{MAIL_USER}@%{DOMAIN_FROM})
+TO (%{MAIL_USER})@(%{DOMAIN_TO})|(\W%{MAIL_USER}\W).*?@(%{DOMAIN_TO})
 
 # common MD patterns
 MD_DATE %{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}
@@ -12,10 +14,11 @@ MD_FLAGS (<--|-->|[*]\W)
 MD_REMOTE (%{IP:md_remote_ip})(:%{INT:md_remote_port})
 MD_CLIENT (%{IP:md_client_ip})(:%{INT:md_client_port})
 MD_CODE (%{INT})|(%{INT})-(%{INT}.%{INT}.%{INT})
-MD_AUTH (%{MAIL_USER}@%{DOMAIN_AUTH})
-FROM (%{MAIL_USER}@%{DOMAIN_FROM})
-TO (%{MAIL_USER})@(%{DOMAIN_TO})|(\W%{MAIL_USER}\W).*?@(%{DOMAIN_TO})
-MD_SIZE (SIZE=%{NUMBER:md_size})
+MD_AUTH TRUE|FALSE
+KEY_VALUE \S+
+MD_SIZE (SIZE=%{NUMBER:Size})
+MD_SUBJECT Subject: %{GREEDYDATA}
+MD_MESSAGEID Parser: strMessageID=<%{KEY_VALUE:MessageID}>
 
 # smtp connect patterns
 MD_CONNECTION Accepting SMTP connection from %{MD_CLIENT} to %{MD_REMOTE}|Attempting SMTP connection to %{MD_REMOTE}
@@ -24,5 +27,6 @@ MD_CONNECTION Accepting SMTP connection from %{MD_CLIENT} to %{MD_REMOTE}|Attemp
 MD_AUTHENTICATED Authenticated as %{MD_AUTH}
 
 # delivered patterns
-MD_FROM From: .*<%{FROM:From}>
-MD_TO To: .*<%{TO:To}>
+MD_Envelope Parser: strEnvelopeFrom=%{FROM:EnvelopFrom}
+MD_FROM Parser: strFromEmail=%{FROM:From}
+MD_TO Parser: %{TO:To}
