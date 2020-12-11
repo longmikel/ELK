@@ -1,32 +1,38 @@
-# helper DM patterns
+# helper MD patterns
 DOMAIN \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 DOMAIN_FROM %{DOMAIN:domain_from}
 DOMAIN_TO %{DOMAIN:domain_to}
 DOMAIN_AUTH %{DOMAIN:domain_auth}
 MAIL_USER [\.\+\=\-_a-zA-Z0-9]+
 FROM (%{MAIL_USER}@%{DOMAIN_FROM})
-TO (%{MAIL_USER})@(%{DOMAIN_TO})|(\W%{MAIL_USER}\W).*?@(%{DOMAIN_TO})
+TO (%{MAIL_USER})@(%{DOMAIN_TO})
 
 # common MD patterns
 MD_DATE %{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}
 MD_ID ([0-9])\w+
-MD_FLAGS (<--|-->|[*]\W)
+MD_FLAGS (<--|-->|([*\W]){1}.)
 MD_REMOTE (%{IP:md_remote_ip})(:%{INT:md_remote_port})
 MD_CLIENT (%{IP:md_client_ip})(:%{INT:md_client_port})
-MD_CODE (%{INT})|(%{INT})-(%{INT}.%{INT}.%{INT})
-MD_AUTH TRUE|FALSE
 KEY_VALUE \S+
-MD_SIZE (SIZE=%{NUMBER:Size})
-MD_SUBJECT Subject: %{GREEDYDATA}
-MD_MESSAGEID Parser: strMessageID=<%{KEY_VALUE:MessageID}>
+MD_SIZE (SIZE=%{NUMBER:md_size})
+MD_AUTH TRUE|FALSE
+MD_STATUS successful|terminated
 
-# smtp connect patterns
-MD_CONNECTION Accepting SMTP connection from %{MD_CLIENT} to %{MD_REMOTE}|Attempting SMTP connection to %{MD_REMOTE}
+# common MD_OUT in patterns
+MD_OUT_MAILFROM MAIL From:<%{FROM:From}> %{MD_SIZE}
+MD_OUT_RCPTTO RCPT To:<%{TO:To}>
+MD_OUT_SMTPCONT Connection established %{MD_CLIENT} --> %{MD_REMOTE}
+MD_OUT_SUBJECT Subject: %{GREEDYDATA:Subject}
+MD_OUT_MESSAGEID Message-ID: <%{KEY_VALUE:md_messageid}>
+MD_OUT_SMTPSTATUS SMTP session %{MD_STATUS:Action}
 
-# authenticated patterns
-MD_AUTHENTICATED Authenticated as %{MD_AUTH}
+# common MD_IN in patterns
+MD_IN_MAILFROM MAIL FROM:<%{FROM:From}> %{MD_SIZE}|MAIL FROM:<%{FROM:From}>
+MD_IN_RCPTTO RCPT TO:<%{TO:To}>
+MD_IN_ACCEPTSMTP Accepting SMTP connection from %{MD_REMOTE} to %{MD_CLIENT}
+MD_IN_HELO EHLO %{GREEDYDATA:EHLO}
+MD_IN_SOCKET Socket error %{NUMBER:CODE} - %{GREEDYDATA}
 
-# delivered patterns
-MD_Envelope Parser: strEnvelopeFrom=%{FROM:EnvelopFrom}
-MD_FROM Parser: strFromEmail=%{FROM:From}
-MD_TO Parser: %{TO:To}
+# aggregate patterns
+MD_OUT_PARSE %{MD_OUT_MAILFROM}|%{MD_OUT_RCPTTO}|%{MD_OUT_SMTPCONT}|%{MD_OUT_SUBJECT}|%{MD_OUT_MESSAGEID}|%{MD_OUT_SMTPSTATUS}
+MD_IN_PARSE %{MD_IN_MAILFROM}|%{MD_IN_RCPTTO}|%{MD_IN_ACCEPTSMTP}|%{MD_IN_HELO}|%{MD_IN_SOCKET}
