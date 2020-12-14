@@ -14,25 +14,28 @@ MD_FLAGS (<--|-->|([*\W]){1}.)
 MD_REMOTE (%{IP:md_remote_ip})(:%{INT:md_remote_port})
 MD_CLIENT (%{IP:md_client_ip})(:%{INT:md_client_port})
 KEY_VALUE \S+
-MD_SIZE (SIZE=%{NUMBER:md_size})
+MD_SIZE (SIZE=%{NUMBER:md_size})|(size=%{NUMBER:md_size})|(Message size:.*?%{NUMBER:md_size})
 MD_AUTH TRUE|FALSE
 MD_STATUS successful|terminated
 
 # common MD_OUT in patterns
-MD_OUT_MAILFROM MAIL From:<%{FROM:From}> %{MD_SIZE}
-MD_OUT_RCPTTO RCPT To:<%{TO:To}>
+MD_OUT_MAILFROM MAIL From:.*?<%{FROM:From}> %{MD_SIZE}
+MD_OUT_RCPTTO RCPT To:.*?<%{TO:To}>
 MD_OUT_SMTPCONT Connection established %{MD_CLIENT} --> %{MD_REMOTE}
 MD_OUT_SUBJECT Subject: %{GREEDYDATA:Subject}
 MD_OUT_MESSAGEID Message-ID: <%{KEY_VALUE:md_messageid}>
 MD_OUT_SMTPSTATUS SMTP session %{MD_STATUS:Action}
 
 # common MD_IN in patterns
-MD_IN_MAILFROM MAIL FROM:<%{FROM:From}> %{MD_SIZE}|MAIL FROM:<%{FROM:From}>
-MD_IN_RCPTTO RCPT TO:<%{TO:To}>
+MD_IN_MAILFROM MAIL FROM:.*?<%{FROM:From}>|mail FROM:.*?<%{FROM:From}>
+MD_IN_RCPTTO RCPT TO:.*?<%{TO:To}>
 MD_IN_ACCEPTSMTP Accepting SMTP connection from %{MD_REMOTE} to %{MD_CLIENT}
+MD_IN_MESSAGEID Message-ID: <%{KEY_VALUE:md_messageid}>
 MD_IN_HELO EHLO %{GREEDYDATA:EHLO}
 MD_IN_SOCKET Socket error %{NUMBER:CODE} - %{GREEDYDATA}
+MD_IN_ALERT %{DATA:Alert} Failed SMTP authentication attempt from %{IP:Remote IP} for "%{GREEDYDATA:From}" %{NOTSPACE:Security}
+MD_IN_SMTPSTATUS SMTP session %{MD_STATUS:Action}
 
 # aggregate patterns
 MD_OUT_PARSE %{MD_OUT_MAILFROM}|%{MD_OUT_RCPTTO}|%{MD_OUT_SMTPCONT}|%{MD_OUT_SUBJECT}|%{MD_OUT_MESSAGEID}|%{MD_OUT_SMTPSTATUS}
-MD_IN_PARSE %{MD_IN_MAILFROM}|%{MD_IN_RCPTTO}|%{MD_IN_ACCEPTSMTP}|%{MD_IN_HELO}|%{MD_IN_SOCKET}
+MD_IN_PARSE %{MD_IN_MAILFROM}|%{MD_IN_RCPTTO}|%{MD_IN_ACCEPTSMTP}|%{MD_SIZE}|%{MD_IN_MESSAGEID}|%{MD_IN_HELO}|%{MD_IN_ALERT }|%{MD_IN_SOCKET}|%{MD_IN_SMTPSTATUS}
