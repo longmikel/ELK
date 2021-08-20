@@ -14,7 +14,7 @@ buffer_time:
 
 # The Elasticsearch hostname for metadata writeback
 # Note that every rule can have its own Elasticsearch host
-es_host: es-client.emailserver.vn
+es_host: X
 
 # The Elasticsearch port
 es_port: 9200
@@ -43,8 +43,8 @@ es_port: 9200
 #es_send_get_body_as: GET
 
 # Option basic-auth username and password for Elasticsearch
-es_username: admin
-es_password: O4FzG12Pfu9QhTcvLrzK
+es_username: XX
+es_password: YY
 
 # Use SSL authentication with client certificates client_cert must be
 # a pem file containing both cert and key for client
